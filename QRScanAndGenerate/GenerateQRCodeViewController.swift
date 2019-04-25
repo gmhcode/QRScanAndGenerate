@@ -25,7 +25,10 @@ class GenerateQRCodeViewController: UIViewController {
     
     @IBAction func button(_ sender: Any) {
         
-        let myString = "^n:\n\(String(describing: networkNameTextField.text!))\n" + "^p:\n\(String(describing: networkPasswordTextField.text!))"
+        guard let networkNameTextField = networkNameTextField.text,
+            let networkPasswordTextField = networkPasswordTextField.text else {print("❇️♊️>>>\(#file) \(#line): guard let failed<<<"); return}
+        
+        let myString = "^n:\n\(String(describing: networkNameTextField))\n" + "^p:\n\(String(describing: networkPasswordTextField))"
         
         print("⚡️\(myString)")
             let data = myString.data(using: .ascii, allowLossyConversion: false)
@@ -37,10 +40,11 @@ class GenerateQRCodeViewController: UIViewController {
             
             
             let transform = CGAffineTransform(scaleX: 10, y: 10)
-            let transformImage = ciImage?.transformed(by: transform)
+        
+        guard let transformImage = ciImage?.transformed(by: transform) else {print("❇️♊️>>>\(#file) \(#line): guard let failed<<<"); return}
             
-            
-            let img = convert(cmage: transformImage!)
+            //converting ciImage to UIImage
+            let img = convert(cmage: transformImage)
             myImageView.image = img
             
             
@@ -50,7 +54,9 @@ class GenerateQRCodeViewController: UIViewController {
     func convert(cmage:CIImage) -> UIImage
     {
         let context:CIContext = CIContext.init(options: nil)
-        let cgImage:CGImage = context.createCGImage(cmage, from: cmage.extent)!
+        
+        guard let cgImage:CGImage = context.createCGImage(cmage, from: cmage.extent) else {print("❇️♊️>>>\(#file) \(#line): guard let failed<<<"); return UIImage()}
+        
         let image:UIImage = UIImage.init(cgImage: cgImage)
         return image
     }

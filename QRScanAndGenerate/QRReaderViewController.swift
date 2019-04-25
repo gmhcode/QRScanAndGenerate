@@ -39,7 +39,7 @@ class QRReaderViewController: UIViewController {
             
             let output = AVCaptureMetadataOutput()
             session.addOutput(output)
-            
+            //setting up the delegate to read qr
             output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
             output.metadataObjectTypes = [AVMetadataObject.ObjectType.qr]
             
@@ -74,6 +74,7 @@ class QRReaderViewController: UIViewController {
 
 extension QRReaderViewController: AVCaptureMetadataOutputObjectsDelegate {
     
+    // heres where the qr is actually read
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection)
     {
         if metadataObjects != nil && metadataObjects.count != 0
@@ -89,8 +90,9 @@ extension QRReaderViewController: AVCaptureMetadataOutputObjectsDelegate {
                         
                         if splitArray.contains("^n:") && splitArray.contains("^p:"){
                             
-                            let nameIndex = splitArray.firstIndex(of: "^n:")!
-                            let pwIndex = splitArray.firstIndex(of: "^p:")!
+                            
+                            guard let nameIndex = splitArray.firstIndex(of: "^n:"), let pwIndex = splitArray.firstIndex(of: "^p:") else {print("❇️♊️>>>\(#file) \(#line): guard let failed<<<"); return}
+                            
                             
                             networkNameTextFIeld.text = String(splitArray[nameIndex + 1])
                             networkPasswordTextField.text = String(splitArray[pwIndex + 1])
@@ -111,7 +113,12 @@ extension QRReaderViewController: AVCaptureMetadataOutputObjectsDelegate {
 
 extension QRReaderViewController{
     func connectToNetwork(){
-        let hotspotConfig = NEHotspotConfiguration(ssid: "\(networkNameTextFIeld.text!)", passphrase: "\(networkPasswordTextField.text!)", isWEP: false)
+        
+        guard let networkNameTextFIeldText = networkNameTextFIeld.text,
+            let networkPasswordTextFieldText = networkPasswordTextField.text else {print("❇️♊️>>>\(#file) \(#line): guard let failed<<<"); return}
+        
+        let hotspotConfig = NEHotspotConfiguration(ssid: "\(networkNameTextFIeldText)", passphrase: "\(networkPasswordTextFieldText)", isWEP: false)
+        
         NEHotspotConfigurationManager.shared.apply(hotspotConfig) {[unowned self] (error) in
             if let error = error {
                 print("error = ",error)
@@ -119,8 +126,8 @@ extension QRReaderViewController{
             else {
                 print("Success!")
                 
-                print("🏧\(self.networkNameTextFIeld.text!)")
-                print("✅\(self.networkPasswordTextField.text!)")
+                print("🏧\(networkNameTextFIeldText)")
+                print("✅\(networkPasswordTextFieldText)")
             }
         }
     }
